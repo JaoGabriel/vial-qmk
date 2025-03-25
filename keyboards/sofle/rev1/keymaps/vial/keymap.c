@@ -20,103 +20,125 @@
 
 #include QMK_KEYBOARD_H
 #include "oled.c"
+#include "layers.h"
+
+// Custom modifier combinations
+#define C_S(kc) (QK_LCTL | QK_LSFT | (kc))  // Ctrl+Shift+Key
+#define LSA(kc) (QK_LSFT | QK_LALT | (kc))   // Left Shift+Alt+Key
 
 // Default keymap. This can be changed in Vial. Use oled.c to change beavior that Vial cannot change.
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /*
- * QWERTY
+ * QWERTY Layer
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |  `   |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+ * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  | Bspc |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | ESC  |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  | Bspc |
+ * | Tab  |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  |  `   |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Tab  |   A  |   S  |   D  |   F  |   G  |-------.    ,-------|   H  |   J  |   K  |   L  |   ;  |  '   |
- * |------+------+------+------+------+------|       |    |       |------+------+------+------+------+------|
- * |LShift|   Z  |   X  |   C  |   V  |   B  |-------|    |-------|   N  |   M  |   ,  |   .  |   /  |RShift|
+ * | Caps |   A  |   S  |   D  |   F  |   G  |-------.    ,-------|   H  |   J  |   K  |   L  |   ;  |  '   |
+ * |------+------+------+------+------+------|  Mute |    | Play  |------+------+------+------+------+------|
+ * | LCTRL|   Z  |   X  |   C  |   V  |   B  |-------|    |-------|   N  |   M  |   ,  |   .  |   /  | RCTRL|
  * `-----------------------------------------/       /     \      \-----------------------------------------'
- *            | LGUI | LAlt | LCTR |LOWER | /Enter  /       \Space \  |RAISE | RCTR | RAlt | RGUI |
- *            |      |      |      |      |/       /         \      \ |      |      |      |      |
- *            `----------------------------------'           '------''---------------------------'
+ *            | LGUI | LAlt | Home |Special| /Space  /       \ Enter \  | Dev  | End  | RAlt | RGUI |
+ *            |      |      |      |       |/Shift   /         \Shift \ |      |      |      |      |
+ *            `-------------------------------------'           '------''--------------------------'
  */
-
-[0] = LAYOUT(
-  KC_GRV,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,                     KC_6,    KC_7,    KC_8,    KC_9,    KC_0,  KC_GRV,
-  KC_ESC,   KC_Q,   KC_W,    KC_E,    KC_R,    KC_T,                     KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,  KC_BSPC,
-  KC_TAB,   KC_A,   KC_S,    KC_D,    KC_F,    KC_G,                     KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN,  KC_QUOT,
-  KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_V,    KC_B, KC_MUTE,     XXXXXXX,KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_RSFT,
-                 KC_LGUI,KC_LALT,KC_LCTL, MO(2), KC_ENT,      KC_SPC,  MO(3), KC_RCTL, KC_RALT, KC_RGUI
+ [_QWERTY] = LAYOUT(
+    KC_ESC,   KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                                 KC_6,     KC_7,     KC_8,     KC_9,    KC_0,    KC_BSPC,
+    KC_TAB,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                                 KC_Y,     KC_U,     KC_I,     KC_O,    KC_P,    KC_GRV,
+    KC_CAPS,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                                                 KC_H,     KC_J,     KC_K,     KC_L,    KC_SCLN, KC_QUOT,
+    KC_LCTL,  KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,         KC_MUTE,              KC_MPLY,          KC_N,     KC_M,     KC_COMM,  KC_DOT,  KC_SLSH, KC_RCTL,
+                       KC_LGUI, KC_LALT, KC_HOME, TG(_SPECIAL), LSFT_T(KC_SPC),       RSFT_T(KC_ENT),   TG(_DEV), KC_END,   KC_RALT,  KC_RGUI
 ),
 /*
- * COLEMAK
+ * SPECIAL Layer - Symbols and Shifted Characters
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |  `   |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+ * |Trans |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  | Trans|
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | ESC  |   Q  |   W  |   F  |   P  |   G  |                    |   J  |   L  |   U  |   Y  |   ;  | Bspc |
+ * |Trans |   =  |   -  |   +  |   {  |   }  |                    |   [  |   ]  |   :  |   ;  |   |  |  N/A |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | TAB  |   A  |   R  |   S  |   T  |   D  |-------.    ,-------|   H  |   N  |   E  |   I  |   O  |  '   |
- * |------+------+------+------+------+------|  MUTE |    |       |------+------+------+------+------+------|
- * |LShift|   Z  |   X  |   C  |   V  |   B  |-------|    |-------|   K  |   M  |   ,  |   .  |   /  |RShift|
+ * |Trans |      |      |      |   \  |   /  |-------.    ,-------|   ?  |   _  |   ~  |      |      |      |
+ * |------+------+------+------+------+------|  Mute |    | Play  |------+------+------+------+------+------|
+ * |Trans |      |      |      |      |      |-------|    |-------|   <  |   >  |      |      |      | Trans|
  * `-----------------------------------------/       /     \      \-----------------------------------------'
- *            | LGUI | LAlt | LCTR |LOWER | /Enter  /       \Space \  |RAISE | RCTR | RAlt | RGUI |
- *            |      |      |      |      |/       /         \      \ |      |      |      |      |
- *            `----------------------------------'           '------''---------------------------'
+ *            |Trans |Trans |Trans |Trans | /       /       \      \  |Trans |Trans | Trans |Trans |
+ *            |      |      |      |      |/       /         \      \ |      |      |      |       |
+ *            `-----------------------------------'           '------''---------------------------'
  */
-
-[1] = LAYOUT(
-  KC_GRV,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,                      KC_6,    KC_7,    KC_8,    KC_9,    KC_0,  KC_GRV,
-  KC_ESC,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_G,                      KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN,  KC_BSPC,
-  KC_TAB,   KC_A,   KC_R,    KC_S,    KC_T,    KC_D,                      KC_H,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
-  KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_V,    KC_B, KC_MUTE,      XXXXXXX,KC_K,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_RSFT,
-                 KC_LGUI,KC_LALT,KC_LCTL,KC_TRNS, KC_ENT,      KC_SPC,  KC_TRNS, KC_RCTL, KC_RALT, KC_RGUI
+ [_SPECIAL] = LAYOUT(
+    KC_TRNS,  LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4),    LSFT(KC_5),                           LSFT(KC_6),    LSFT(KC_7),    LSFT(KC_8),   LSFT(KC_9),    LSFT(KC_0),    KC_TRNS,
+    KC_TRNS,  KC_EQL,     KC_MINS,    KC_PLUS,    LSFT(KC_LBRC), LSFT(KC_RBRC),                        KC_LBRC,       KC_RBRC,       KC_SCLN,      LSFT(KC_SCLN), LSFT(KC_BSLS), KC_NO,
+    KC_TRNS,  KC_NO,      KC_NO,      KC_NO,      KC_BSLS,       KC_SLSH,                              LSFT(KC_SLSH), LSFT(KC_MINS), LSFT(KC_GRV), KC_NO,         KC_NO,         KC_NO,
+    KC_TRNS,  KC_NO,      KC_NO,      KC_NO,      KC_NO,         KC_NO,        KC_MUTE,       KC_MPLY, LSFT(KC_COMM), LSFT(KC_DOT),  KC_NO,        KC_NO,         KC_NO,         KC_TRNS,
+                          KC_TRNS,    KC_TRNS,    KC_TRNS,       KC_TRNS,      KC_TRNS,       KC_TRNS, KC_TRNS,       KC_TRNS,       KC_TRNS,      KC_TRNS
 ),
-/* LOWER
+/*
+ * DEV Layer - Developer Tools
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  | F11  |
+ * |Trans |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F8  |  F9  | F10  | F11  | F12  | Trans|
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  `   |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  | F12  |
+ * |Trans |CS+S  |Ctl+S |CS+`  |CtlF12|PrtScn|                    | Del  |S+Left|  Up  |S+Right|SA+Up|Ctl+- |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Tab  |   !  |   @  |   #  |   $  |   %  |-------.    ,-------|   ^  |   &  |   *  |   (  |   )  |   |  |
- * |------+------+------+------+------+------|  MUTE |    |       |------+------+------+------+------+------|
- * | Shift|  =   |  -   |  +   |   {  |   }  |-------|    |-------|   [  |   ]  |   ;  |   :  |   \  | Shift|
+ * |Trans |Ctl+Z |Ctl+X |Ctl+C |Ctl+V |Ctl+F |-------.    ,-------| Ins  | Left | Down | Right|SA+Dn |Ctl+. |
+ * |------+------+------+------+------+------|  Mute |    | Play  |------+------+------+------+------+------|
+ * |Trans |Ctl+A |Ctl+D |CS+P  |CS+B  |CS+F  |-------|    |-------| Calc |CtlSpc|      |      |      | Trans|
  * `-----------------------------------------/       /     \      \-----------------------------------------'
- *            | LGUI | LAlt | LCTR |LOWER | /Enter  /       \Space \  |RAISE | RCTR | RAlt | RGUI |
- *            |      |      |      |      |/       /         \      \ |      |      |      |      |
- *            `----------------------------------'           '------''---------------------------'
+ *            |Trans |Trans |Trans |Trans | /       /       \      \  |Trans |Trans | Trans |Trans |
+ *            |      |      |      |      |/       /         \      \ |      |      |      |       |
+ *            `-----------------------------------'           '------''----------------------------'
  */
-[2] = LAYOUT(
-  _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                       KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,
-  KC_GRV,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                       KC_6,    KC_7,    KC_8,    KC_9,    KC_0,  KC_F12,
-  _______, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,                       KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_PIPE,
-  _______,  KC_EQL, KC_MINS, KC_PLUS, KC_LCBR, KC_RCBR, _______,       _______, KC_LBRC, KC_RBRC, KC_SCLN, KC_COLN, KC_BSLS, _______,
-                       _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______
-),
-/* RAISE
- * ,----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Esc  | Ins  | Pscr | Menu |      |      |                    |      | PWrd |  Up  | NWrd | DLine| Bspc |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Tab  | LAt  | LCtl |LShift|      | Caps |-------.    ,-------|      | Left | Down | Rigth|  Del | Bspc |
- * |------+------+------+------+------+------|  MUTE  |    |       |------+------+------+------+------+------|
- * |Shift | Undo |  Cut | Copy | Paste|      |-------|    |-------|      | LStr |      | LEnd |      | Shift|
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *            | LGUI | LAlt | LCTR |LOWER | /Enter  /       \Space \  |RAISE | RCTR | RAlt | RGUI |
- *            |      |      |      |      |/       /         \      \ |      |      |      |      |
- *            `----------------------------------'           '------''---------------------------'
- */
-[3] = LAYOUT(
-  _______, _______ , _______ , _______ , _______ , _______,                           _______,  _______  , _______,  _______ ,  _______ ,_______,
-  _______,  KC_INS,  KC_PSCR,   KC_APP,  XXXXXXX, XXXXXXX,                        KC_PGUP, _______,   KC_UP, _______,_______, KC_BSPC,
-  _______, KC_LALT,  KC_LCTL,  KC_LSFT,  XXXXXXX, KC_CAPS,                       KC_PGDN,  KC_LEFT, KC_DOWN, KC_RGHT,  KC_DEL, KC_BSPC,
-  _______,KC_UNDO, KC_CUT, KC_COPY, KC_PASTE, XXXXXXX,  _______,       _______,  XXXXXXX, _______, XXXXXXX, _______,   XXXXXXX, _______,
-                         _______, _______, _______, _______, _______,       _______, _______, _______, _______, _______
+ [_DEV] = LAYOUT(
+    KC_TRNS,  KC_F1,      KC_F2,      KC_F3,       KC_F4,        KC_F5,                                   KC_F8,    KC_F9,         KC_F10,  KC_F11,        KC_F12,       KC_TRNS,
+    KC_TRNS,  C_S(KC_S),  LCTL(KC_S), C_S(KC_GRV), LCTL(KC_F12), KC_PSCR,                                 KC_DEL,   LSFT(KC_LEFT), KC_UP,   LSFT(KC_RGHT), LSA(KC_UP),   RCTL(KC_MINS),
+    KC_TRNS,  LCTL(KC_Z), LCTL(KC_X), LCTL(KC_C),  LCTL(KC_V),   LCTL(KC_F),                              KC_INS,   KC_LEFT,       KC_DOWN, KC_RGHT,       LSA(KC_DOWN), RCTL(KC_DOT),
+    KC_TRNS,  LCTL(KC_A), LCTL(KC_D), C_S(KC_P),   C_S(KC_B),    C_S(KC_F),  KC_MUTE,            KC_MPLY, KC_CALC,  RCTL(KC_SPC),  KC_NO,   KC_NO,         KC_NO,        KC_TRNS,
+                          KC_TRNS,    KC_TRNS,     KC_TRNS,      KC_TRNS,    KC_TRNS,            KC_TRNS, KC_TRNS,  KC_TRNS,       KC_TRNS, KC_TRNS
 )
 };
 
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    [0] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
-    [1] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
-    [2] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
-    [3] = { ENCODER_CCW_CW(KC_TRNS, KC_TRNS), ENCODER_CCW_CW(KC_TRNS, KC_TRNS) },
+const uint16_t PROGMEM encoder_map[NUM_ENCODER_LAYERS][NUM_ENCODERS][NUM_ENCODER_DIRECTIONS] = {
+    [_QWERTY] = {
+        {KC_VOLD, KC_VOLU},  // Left encoder (CCW, CW)
+        {KC_MPRV, KC_MNXT}   // Right encoder
+    },
+    [_SPECIAL] = {
+        {KC_TRNS, KC_TRNS},
+        {KC_TRNS,   KC_TRNS}
+    },
+    [_DEV] = {
+        {KC_TRNS, KC_TRNS},
+        {KC_TRNS, KC_TRNS}
+    }
 };
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+    switch (get_highest_layer(layer_state)) {
+        case _QWERTY:
+            // Base layer: Volume control
+            if (index == 0) { // Left encoder
+                if (clockwise) {
+                    tap_code(KC_VOLU);
+                } else {
+                    tap_code(KC_VOLD);
+                }
+            } else { // Right encoder
+                if (clockwise) {
+                    tap_code(KC_MEDIA_NEXT_TRACK);
+                } else {
+                    tap_code(KC_MEDIA_PREV_TRACK);
+                }
+            }
+            break;
+    }
+    return true;
+}
+
+bool dip_switch_update_user(uint8_t index, bool active) {
+    if (index == 0) { // Left encoder press
+        tap_code(KC_MUTE);
+    } else { // Right encoder press
+        tap_code(KC_MEDIA_PLAY_PAUSE);
+    }
+    return true;
+}
